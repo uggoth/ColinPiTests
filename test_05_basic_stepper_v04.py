@@ -14,7 +14,7 @@ steps_per_step_on = 8.0
 
 revs_per_minute = 99.0
 print ('\ninput rpm',revs_per_minute)
-duration_seconds = 5.0
+duration_seconds = 350.0
 print ('input duration',duration_seconds)
 
 revs_per_second = revs_per_minute / seconds_per_minute
