@@ -1,4 +1,4 @@
-module_name = 'test_00_A_digital_outputs_object_v01.py'
+module_name = 'test_00_B_digital_outputs_object_v01.py'
 created_at = '202304301001'
 
 import GPIOPi_v43 as GPIO
