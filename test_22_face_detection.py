@@ -3,7 +3,11 @@ module_name = 'test_22_face_detection.py'
 import cv2
 import time
 from picamera2 import Picamera2
-face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
+classifiers = {'UPPER_BODY':'haarcascade_upperbody',
+               'FRONTAL_FACE':'haarcascade_frontalface_default',
+               'FULL_BODY':'haarcascade_fullbody'}
+which_classifier = 'FULL_BODY'
+face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/" + classifiers[which_classifier] + ".xml")
 cv2.startWindowThread()
 picam2 = Picamera2()
 picam2.configure(picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (640, 480)}))
