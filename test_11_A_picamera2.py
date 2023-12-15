@@ -1,3 +1,6 @@
+module_prefix = 'test_11_A_picamera2'
+module_name = module_prefix + '_v02.py'
+print (module_name, 'starting')
 from picamera2 import Picamera2 #, Preview
 import libcamera
 import time
@@ -11,5 +14,7 @@ picam2.configure(camera_config)
 # picam2.start_preview(Preview.QTGL)
 picam2.start()
 time.sleep(1)
-picam2.capture_file("test.jpg")
+fname = module_prefix + '.jpg'
+picam2.capture_file(fname)
 picam2.close()
+print (module_name, 'finished')
