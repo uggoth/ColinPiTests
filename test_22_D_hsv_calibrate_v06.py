@@ -1,4 +1,4 @@
-module_name = 'test_22_hsv_calibrate_B_v05.py'
+module_name = 'test_22_D_hsv_calibrate_B_v05.py'
 print (module_name,'starting')
 
 import tkinter as tk
@@ -6,7 +6,6 @@ import colorsys
 import cv2
 import time
 from picamera2 import Picamera2
-import imutils
 
 def hsv_to_hex(hsv_in): #  hsv_in is an array [h,s,v] 0<h<255
                         #  result is a string of form: '#rrggbb'
