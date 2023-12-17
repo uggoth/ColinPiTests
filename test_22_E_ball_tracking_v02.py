@@ -1,4 +1,4 @@
-module_name = 'ball_tracking_v02.py'
+module_name = 'test_22_E_ball_tracking_v02.py'
 
 from collections import deque
 import numpy as np
