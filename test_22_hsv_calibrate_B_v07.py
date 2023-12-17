@@ -1,4 +1,4 @@
-module_name = 'test_22_hsv_calibrate_B_v05.py'
+module_name = 'test_22_hsv_calibrate_B_v07.py'
 print (module_name,'starting')
 
 import tkinter as tk
@@ -134,6 +134,7 @@ picam2.configure(picam2.create_video_configuration(
         main={"format": 'RGB888',
               "size": (640, 480),
               }))
+picam2.set_controls({"ExposureTime": 10000000})
 picam2.start()
 timer_previous = time.time()
 timer_interval = 2.0
