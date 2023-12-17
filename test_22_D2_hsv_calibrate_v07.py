@@ -1,4 +1,4 @@
-module_name = 'test_22_hsv_calibrate_B_v07.py'
+module_name = 'test_22_D2_hsv_calibrate_v07.py'
 print (module_name,'starting')
 
 import tkinter as tk
