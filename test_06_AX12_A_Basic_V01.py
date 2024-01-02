@@ -3,22 +3,24 @@ print (module_name, 'starting')
 
 from pyax12.connection import Connection
 
-#  To obtain the port name use:    ls /dev/serial/by-path
-port_name = 'platform-3f980000.usb-usb-0:1.1.3:1.0-port0'
-ax12_connection = Connection(
-    port='/dev/serial/by-path/' + port_name,
-    baudrate=1000000)
+from importlib.machinery import SourceFileLoader
 
-dynamixel_id = 16
+colin_data = SourceFileLoader('Colin', '/home/pi/ColinData.py').load_module()
+my_data = colin_data.ColinData()
+ax12_path = my_data.params['AX12_PATH']
+ax12_speed = my_data.params['AX12_SPEED']
+ax12_connection = Connection(port=ax12_path, baudrate=ax12_speed)
 
 ids_available = ax12_connection.scan()
-
-for id in ids_available:
-    result = ax12_connection.ping(id)
-    if result:
-        print (id, 'Available')
-    else:
-        print (id, '*** NO RESPONSE ***')
+if len(ids_available) < 1:
+    print ('No AX12s found')
+else:
+    for id in ids_available:
+        result = ax12_connection.ping(id)
+        if result:
+            print (id, 'Available')
+        else:
+            print (id, '*** NO RESPONSE ***')
 
 ax12_connection.close()
 

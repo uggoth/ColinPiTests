@@ -4,7 +4,13 @@ print (module_name, 'starting')
 
 from pyax12.connection import Connection
 
-ax12_connection = Connection(port='/dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.2:1.0-port0', baudrate=1000000)
+from importlib.machinery import SourceFileLoader
+
+colin_data = SourceFileLoader('Colin', '/home/pi/ColinData.py').load_module()
+my_data = colin_data.ColinData()
+ax12_path = my_data.params['AX12_PATH']
+ax12_speed = my_data.params['AX12_SPEED']
+ax12_connection = Connection(port=ax12_path, baudrate=ax12_speed)
 
 ids_available = ax12_connection.scan()
 

@@ -4,10 +4,17 @@ print (module_name, 'starting')
 
 from pyax12.connection import Connection
 
-ax12_connection = Connection(port='/dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.2:1.0-port0', baudrate=1000000)
+from importlib.machinery import SourceFileLoader
 
-dynamixel_id = 16
+colin_data = SourceFileLoader('Colin', '/home/pi/ColinData.py').load_module()
+my_data = colin_data.ColinData()
+ax12_path = my_data.params['AX12_PATH']
+ax12_speed = my_data.params['AX12_SPEED']
+ax12_connection = Connection(port=ax12_path, baudrate=ax12_speed)
+ax12_list = my_data.params['AX12_LIST']
 
-ax12_connection.pretty_print_control_table(dynamixel_id)
+for dynamixel_id in ax12_list:
+    print ('\nDYNAMIXEL ID:',dynamixel_id)
+    ax12_connection.pretty_print_control_table(dynamixel_id)
 
 ax12_connection.close()
