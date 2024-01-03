@@ -20,5 +20,5 @@ for i in range(loops):
   array = picam2.capture_array()
 duration = time.time() - start
 fps = int((loops / duration) + 0.5)
-print (loops,'loops   ',fps,'FPS')
+print ('\n',loops,'loops   ',fps,'FPS')
 picam2.close()

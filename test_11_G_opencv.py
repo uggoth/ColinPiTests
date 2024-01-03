@@ -6,15 +6,17 @@ print (cv2.__version__)
 import time
 cam = cv2.VideoCapture(0)
 for i in range(5):
-	time.sleep(1)
-	result, image = cam.read()
-	if result:
-		break
+        print ('loop',i+1)
+        time.sleep(1)
+        result, image = cam.read()
+        if result:
+                break
 if result:
-	print ('image OK')
-	cv2.imshow('testing', image)
-	cv2.imwrite('testing.png', image)
+        print ('image OK')
+        cv2.imshow('testing', image)
+        cv2.imwrite('testing.png', image)
 else:
-	print ('NO image')
+        print ('NO image')
 
+cam.close()
 print (module_name, 'finished')
