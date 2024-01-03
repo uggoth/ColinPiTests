@@ -3,8 +3,17 @@ module_name = 'posing_setup_small_v25.py'
 print (module_name, 'starting')
 
 import tkinter as tk
-import AX12_Servo_V01 as AX12_Servo
-Connection = AX12_Servo.Connection
+
+from importlib.machinery import SourceFileLoader
+colin_data = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
+my_data = colin_data.ColinData()
+ax12_code = my_data.params['AX12_Servo']
+ax12_path = my_data.params['AX12_PATH']
+ax12_speed = my_data.params['AX12_SPEED']
+AX12_Servo = SourceFileLoader('ax12_code','/home/pi/ColinPiClasses/' + ax12_code + '.py').load_module()
+
+ax12_connection = AX12_Servo.Connection(port=ax12_path, baudrate=ax12_speed)
+wrist_servo = AX12_Servo.AX12_Servo('Wrist Servo', ax12_connection, 20)
 
 class ServoSlider:
     def __init__(self, master, x_origin, y_origin, servo):
@@ -126,14 +135,8 @@ def my_loop(my_calibrator):
 #    my_calibrator.volts.set_text()
     root.after(10, my_loop, my_calibrator)   # milliseconds
 
-ax12_connection = Connection(port='/dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.2:1.0-port0', baudrate=1000000)
-
-base_servo = AX12_Servo.AX12_Servo('Base Servo', ax12_connection, 13)
-shoulder_servo = AX12_Servo.AX12_Servo('Shoulder Servo', ax12_connection, 14)
-elbow_servo = AX12_Servo.AX12_Servo('Elbow Servo', ax12_connection, 15)
-wrist_servo = AX12_Servo.AX12_Servo('Wrist Servo', ax12_connection, 16)
-
-arm_servos = [base_servo, shoulder_servo, elbow_servo, wrist_servo]
+arm_servos = [AX12_Servo.AX12_Servo('Base Servo', ax12_connection, 20),
+              AX12_Servo.AX12_Servo('Shoulder Servo', ax12_connection, 21)]
 
 root = tk.Tk()
 root.title('Arm Calibration')

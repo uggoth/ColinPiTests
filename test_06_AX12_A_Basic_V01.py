@@ -4,8 +4,7 @@ print (module_name, 'starting')
 from pyax12.connection import Connection
 
 from importlib.machinery import SourceFileLoader
-
-colin_data = SourceFileLoader('Colin', '/home/pi/ColinData.py').load_module()
+colin_data = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
 my_data = colin_data.ColinData()
 ax12_path = my_data.params['AX12_PATH']
 ax12_speed = my_data.params['AX12_SPEED']
