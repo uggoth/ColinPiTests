@@ -14,3 +14,5 @@ for i in range(9):
         test_port.write(out_text)
     except:
         print ('write failed')
+
+print (module_name, 'finished')
