@@ -1,6 +1,6 @@
-module_name = 'test_15_F_command_stream_v01.py'
+module_name = 'test_15_D_command_stream_v03.py'
 print (module_name,'starting')
-print ('expects test_15_F to be running on the Pico')
+print ('expects test_15_D to be running on the Pico')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
@@ -18,19 +18,7 @@ gpio = pigpio.pi()
 handshake = CommandStream.Handshake(4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
-
-serial_no = 1
-if my_pico.valid:
-    msgs = ['DUMMY','WHOU','DUMMY','MFWD0050',
-            'DUMMY','MSTP','DUMMY','EXIT']
-    for msg in msgs:
-        print (' ')
-        print (serial_no, msg)
-        time.sleep(1)
-        sno = '{:04.0f}'.format(serial_no)
-        print (my_pico.do_command(sno + msg))
-        serial_no += 1
-else:
-    print ('*** No Pico')
+my_pico.do_command('0001EXIT')
+time.sleep(1)
 my_pico.close()
 print (module_name, 'finished')
