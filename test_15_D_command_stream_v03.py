@@ -18,7 +18,14 @@ gpio = pigpio.pi()
 handshake = CommandStream.Handshake(4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
-my_pico.do_command('0001EXIT')
+commands = ['WHOU','GASH','POSN','EXIT']
+i = 0
+for command in commands:
+    i += 1
+    serial_no_sent = '{:04}'.format(i)
+    print ('Sending ' + serial_no_sent + command)
+    serial_no_received, feedback, data = my_pico.do_command(serial_no_sent,command)
+    print (serial_no_received, feedback, data)
 time.sleep(1)
 my_pico.close()
 print (module_name, 'finished')
