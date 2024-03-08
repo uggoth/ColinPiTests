@@ -1,6 +1,6 @@
-module_name = 'test_15_F_command_stream_v01.py'
+module_name = 'test_15_H_data_v03.py'
 print (module_name,'starting')
-print ('expects test_15_F to be running on the Pico')
+print ('expects test_15_H to be running on the Pico')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
@@ -13,6 +13,8 @@ CommandStream = SourceFileLoader('CommandStream', '/home/pi/ColinPiClasses/' +
                                  data_values['CommandStream'] + '.py').load_module()
 import time
 import pigpio
+zombie_arm = ThisPi.ZombieArm()
+wrist_servo = zombie_arm.wrist_servo
 
 gpio = pigpio.pi()
 handshake = CommandStream.Handshake(4, gpio)
@@ -20,15 +22,24 @@ pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 
 if my_pico.valid:
-    commands = ['DUMMY','WHOU','DUMMY','MFWD0050',
-            'DUMMY','MSTP','DUMMY','EXIT']
+    commands = ['DUMMY','WHOU','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','EXIT']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)
         print (' ')
         print (serial_no, command)
         time.sleep(1)
-        print (my_pico.do_command(serial_no, command))
+        serial_no, feedback, data = my_pico.do_command(serial_no, command)
+        print (serial_no, feedback, data)
+        if feedback == 'OKOK':
+            if ((command == 'JOYS') and ('NONE' not in data)):
+                wrist_pos = int(data[8:12])
+                wrist_servo.move_to_and_wait(wrist_pos)
+        else:
+            got = my_pico.get()
+            while got:
+                print (got)
+                got = my_pico.get()
         i += 1
 else:
     print ('*** No Pico')

@@ -1,6 +1,6 @@
-module_name = 'test_15_F_command_stream_v01.py'
+module_name = 'test_15_G_various_commands_v03.py'
 print (module_name,'starting')
-print ('expects test_15_F to be running on the Pico')
+print ('expects test_15_G to be running on the Pico')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
@@ -20,8 +20,8 @@ pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 
 if my_pico.valid:
-    commands = ['DUMMY','WHOU','DUMMY','MFWD0050',
-            'DUMMY','MSTP','DUMMY','EXIT']
+    commands = ['DUMMY','WHOU','DRIV-050','DRIV0050','DRIVGARBAGE',
+            'DRIV0000','DRIV00500010','DUMMY','EXIT']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)

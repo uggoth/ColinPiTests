@@ -1,6 +1,6 @@
-module_name = 'test_15_F_command_stream_v01.py'
+module_name = 'test_15_G_command_stream_v03.py'
 print (module_name,'starting')
-print ('expects test_15_F to be running on the Pico')
+print ('expects test_15_G to be running on the Pico')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
