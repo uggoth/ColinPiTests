@@ -1,6 +1,6 @@
-module_name = 'test_15_H_data_v03.py'
+module_name = 'test_15_J_joysticks_v03.py'
 print (module_name,'starting')
-print ('expects test_15_H to be running on the Pico')
+print ('expects test_15_J to be running on the Pico')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
@@ -15,30 +15,42 @@ import time
 import pigpio
 zombie_arm = ThisPi.ZombieArm()
 wrist_servo = zombie_arm.wrist_servo
-
+base_servo = zombie_arm.base_servo
 gpio = pigpio.pi()
 handshake = CommandStream.Handshake(4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
+wrist_down = 70
+wrist_up = 50
+wrist_park = -40
+wrist_servo.move_to_and_wait(wrist_up)
+base_park = 27
+base_servo.move_to_and_wait(base_park)
 
 if my_pico.valid:
-    commands = ['DUMMY','WHOU','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','JOYS','EXIT']
     i = 0
-    for command in commands:
+    while True:
+        time.sleep(0.01)
         serial_no = '{:04}'.format(i)
-        print (' ')
-        print (serial_no, command)
-        time.sleep(1)
+        command = 'JOYS'
         serial_no, feedback, data = my_pico.do_command(serial_no, command)
-        if ((data is not None) and ('NONE' not in data)):
-            print (serial_no, feedback, data[0:4], data[4:8], data[8:12], data[12:16], data[16:20], data[20:24])
-        else:
-            print ('NONE')
         if feedback == 'OKOK':
             if ((command == 'JOYS') and ('NONE' not in data)):
-                wrist_pos = int(data[8:12])
+                wrist_joystick = int(data[8:12])
+                if wrist_joystick < 0:
+                    wrist_pos = wrist_down
+                elif wrist_joystick < 25:
+                    wrist_pos = wrist_up
+                else:
+                    wrist_pos = wrist_park
                 wrist_servo.move_to_and_wait(wrist_pos)
+                switch_pos = int(data[16:20])
+                if switch_pos < 0:
+                    print ('Exiting on switch 5')
+                    my_pico.do_command(serial_no, 'EXIT')
+                    break
         else:
+            print ('Flushing dodgy feedback')
             got = my_pico.get()
             while got:
                 print (got)
