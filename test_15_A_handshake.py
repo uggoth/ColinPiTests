@@ -1,5 +1,5 @@
 #  Test command stream handshake
-#  Run in conjunction with test_15_A_handshake on the Pico
+#  Run in conjunction with test_15_A... on the Pico
 
 module_name = 'test_15_A_handshake.py'
 print (module_name, 'starting')
