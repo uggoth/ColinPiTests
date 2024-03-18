@@ -20,7 +20,7 @@ gpio.set_pull_up_down(handshake_pin, pigpio.PUD_UP)
 
 my_callback_up = gpio.callback(handshake_pin, pigpio.RISING_EDGE, callback_up)
 my_callback_down = gpio.callback(handshake_pin, pigpio.FALLING_EDGE, callback_down)
-time.sleep(60)
+time.sleep(30)
 
 gpio.stop()
 print (module_name, 'finished')

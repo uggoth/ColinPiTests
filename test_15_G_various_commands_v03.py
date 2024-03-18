@@ -19,16 +19,25 @@ handshake = CommandStream.Handshake(4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 
+#  DRIVE format is DRIVssssttttddddcccc where:
+#  ssss is steering value from -100 (hard left) to +100 (hard right)
+#  tttt is throttle value from -100 (hard reverse) to +100 (full speed ahead)
+#  dddd is optional duration in milliseconds. If zero or not present do until told to stop
+#  cccc is an optional crab value from -100 (left) to +100 (right) (mecanum only)
+
 if my_pico.valid:
-    commands = ['DUMMY','WHOU','DRIV-050','DRIV0050','DRIVGARBAGE',
-            'DRIV0000','DRIV00500010','DUMMY','EXIT']
+    commands = ['DRIV   0 -20 2500',
+                'DRIV   0  20 2500',
+                'DRIV GARBAGE',
+                'DRIV  50   0 300',
+                'DRIV  50   0 300',
+                'TRNR 500']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)
         print (' ')
         print (serial_no, command)
-        time.sleep(1)
-        print (my_pico.do_command(serial_no, command))
+        print (my_pico.send_command_and_wait(serial_no, command))
         i += 1
 else:
     print ('*** No Pico')
