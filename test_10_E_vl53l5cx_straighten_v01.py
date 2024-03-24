@@ -4,13 +4,16 @@ module_name = module_prefix + '_v' + module_version + '.py'
 print (module_name, 'starting')
 print ('Position robot, then press blue button')
 
-import sys
-from vl53l5cx.vl53l5cx import VL53L5CX
-driver = VL53L5CX()
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
 data_object = data_module.ColinData()
 data_values = data_object.params
+ThisPiVersion = data_values['ThisPi']
+pi_version = '/home/pi/ColinThisPi/' + ThisPiVersion + '.py'
+ThisPi = SourceFileLoader('ThisPi', pi_version).load_module()
+import sys
+from vl53l5cx.vl53l5cx import VL53L5CX
+driver = VL53L5CX()
 command_stream_version = '/home/pi/ColinPiClasses/' + data_values['CommandStream'] + '.py'
 print (command_stream_version)
 CommandStream = SourceFileLoader('CommandStream', command_stream_version).load_module()
@@ -20,6 +23,11 @@ gpio = pigpio.pi()
 pico_id = 'PICOA'
 handshake = CommandStream.Handshake(4, gpio)
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
+my_ultrasonics = ThisPi.Ultrasonics(gpio)
+my_front_ultrasonic = my_ultrasonics.front_ultrasonic.instance
+for i in range(4):
+    mmus = my_front_ultrasonic.read_mms()
+    time.sleep(0.1)
 pwren = 17
 gpio.set_mode(pwren, pigpio.OUTPUT)
 gpio.write(pwren,1)
@@ -68,8 +76,8 @@ driver.start_ranging()
 print(f"Initialised ({time.time() - t:.1f}s)")
 
 big_diff = 20
-small_diff = 8
-ok_diff = 2
+small_diff = 5
+ok_diff = 1.5
 ################################## should learn this
 carpet = True
 if carpet:
@@ -80,13 +88,13 @@ else:
     small_turn = 10
 ##################################
 active_turn = big_turn
-print ('Now waiting for blue button')
 while True:
     no_loops = 10000
     flash_loops = 10
     flip_flop = False
     interval = 0.01
     i = 0
+    print ('Now waiting for blue button')
     while i < no_loops:
         time.sleep(interval)
         if gpio.read(blue_button) == 0:
@@ -104,9 +112,11 @@ while True:
         sys.exit(1)
     wait_time = int(i * interval)
     print ('Blue button pressed after', wait_time, 'seconds . Starting ...')
-    for j in range(15):
+    time.sleep(0.5)
+    max_turns = 15
+    turn = 0
+    while turn < max_turns:
         success, diff = check_straight()
-
         adiff = abs(diff)
         if adiff < ok_diff:
             print ('diff OK', diff)
@@ -120,12 +130,19 @@ while True:
         else:
             active_turn = big_turn
             print ('diff huge', diff)
-        turn = '{:04}'.format(active_turn)
+        turn_amount = '{:04}'.format(active_turn)
 
         if diff < 0:
-            command = 'TRNL' + turn
+            command = 'TRNL' + turn_amount
         else:
-            command = 'TRNR' + turn
-            
+            command = 'TRNR' + turn_amount
+        print (command)
         my_pico.send_command_and_wait('0000', command)
         time.sleep(0.2)
+        turn += 1
+    if turn < max_turns:
+        print ('straighten OK')
+    else:
+        print ('**** Failed to correct within',max_turns,'turns')
+    mmus = my_front_ultrasonic.read_mms()
+    print ('Ultrasonic', mmus)

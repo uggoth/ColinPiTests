@@ -26,18 +26,19 @@ my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 #  cccc is an optional crab value from -100 (left) to +100 (right) (mecanum only)
 
 if my_pico.valid:
-    commands = ['DRIV   0 -20 2500',
-                'DRIV   0  20 2500',
+    commands = ['DRIV   0  202500',
+                'DRIV   0  402500',
                 'DRIV GARBAGE',
                 'DRIV  50   0 300',
                 'DRIV  50   0 300',
+                'DRIV   0   0   0',
                 'TRNR 500']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)
         print (' ')
         print (serial_no, command)
-        print (my_pico.send_command_and_wait(serial_no, command))
+        print (my_pico.send_command(serial_no, command))
         i += 1
 else:
     print ('*** No Pico')

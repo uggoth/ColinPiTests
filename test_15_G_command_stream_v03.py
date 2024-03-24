@@ -20,15 +20,15 @@ pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 
 if my_pico.valid:
-    commands = ['DUMMY','WHOU','DUMMY','MFWD0050',
-            'DUMMY','MSTP','DUMMY','EXIT']
+    commands = ['DUMMY','WHOU','DUMMY','SBUS',
+            'DUMMY','MSTP','DUMMY']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)
         print (' ')
         print (serial_no, command)
         time.sleep(1)
-        print (my_pico.do_command(serial_no, command))
+        print (my_pico.send_command(serial_no, command))
         i += 1
 else:
     print ('*** No Pico')

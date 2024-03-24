@@ -18,7 +18,7 @@ gpio = pigpio.pi()
 handshake = CommandStream.Handshake(4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
-commands = ['WHOU','WAIT2000','WAIT2000','WAIT2000','WAIT2000','WAIT2000','WAIT2000','WHOU']
+commands = ['WHOU','WAIT2000','SBUS','WAIT2000','WHOU']
 i = 0
 for command in commands:
     i += 1

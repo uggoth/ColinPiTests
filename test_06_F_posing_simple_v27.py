@@ -1,4 +1,6 @@
-module_name = 'test_06_F_posing_simple_v27.py'
+module_prefix = 'test_06_F_posing_simple'
+module_version = '27'
+module_name = module_prefix + '_v' + module_version + '.py'
 
 print (module_name, 'starting')
 

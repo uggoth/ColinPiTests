@@ -1,9 +1,12 @@
-module_name = 'posing_setup_small_v25.py'
+module_prefix = 'test_06_G_posing_relay'
+module_version = '01'
+module_name = module_prefix + '_v' + module_version + '.py'
 
 print (module_name, 'starting')
 
 import tkinter as tk
-
+import pigpio
+import time
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
 data_object = data_module.ColinData()
@@ -11,6 +14,50 @@ data_values = data_object.params
 ThisPiVersion = data_values['ThisPi']
 ThisPi = SourceFileLoader('ThisPi', '/home/pi/ColinThisPi/' + ThisPiVersion + '.py').load_module()
 
+class RelayButton:
+    def __init__(self, name, master, x_origin, y_origin, relay_pin_no):
+        self.master = master
+        self.name = name
+        self.relay_pin_no = relay_pin_no
+        gpio.set_mode(relay_pin_no, pigpio.OUTPUT)
+        self.name = name
+        self.on = 1
+        self.off = 0
+        self.state = 0
+        self.my_var = tk.IntVar()
+        self.my_button = tk.Button(master,
+                                   text=name,
+                                   command=self.button_clicked)
+    def button_clicked(self):
+        self.state = 1 - self.state
+        if self.state == self.on:
+            gpio.write(self.relay_pin_no,1)
+            print ('on')
+        else:
+            gpio.write(self.relay_pin_no,0)
+            print ('off')
+        
+class FireButton:
+    def __init__(self, name, master, x_origin, y_origin, fire_pin_no):
+        self.master = master
+        self.name = name
+        self.fire_pin_no = fire_pin_no
+        self.frequency = 50
+        gpio.set_PWM_frequency(fire_pin_no, self.frequency)
+        gpio.set_PWM_range(fire_pin_no, 20000)
+        gpio.hardware_PWM(fire_pin_no, 50, 2000)
+        self.name = name
+        self.my_button = tk.Button(master,
+                                   text=name,
+                                   command=self.button_clicked)
+    def button_clicked(self):
+        gpio.set_servo_pulsewidth(self.fire_pin_no, 2000)
+        time.sleep(1)
+        gpio.set_servo_pulsewidth(self.fire_pin_no, 1000)
+        time.sleep(1)
+        gpio.set_servo_pulsewidth(self.fire_pin_no, 0)
+        
+        
 class ServoSlider:
     def __init__(self, master, x_origin, y_origin, servo):
         self.master = master
@@ -110,6 +157,16 @@ class Calibrator:
                                         orient=tk.HORIZONTAL, label='SPEED')
         self.speed_slider.set(50)
         self.speed_slider.place(x=x_now,y=y_now)
+
+        x_now = x_left
+        y_now += y_interval
+        self.button = RelayButton('Relay', self.frame, x_now, y_now, 8)
+        self.button.my_button.place(x=x_now,y=y_now)
+        
+        x_now = x_left
+        y_now += y_interval
+        self.button = FireButton('Fire', self.frame, x_now, y_now, 19)
+        self.button.my_button.place(x=x_now,y=y_now)
         
 #       INDICATORS
 #        x_now += (x_interval * 8)
@@ -132,6 +189,7 @@ def my_loop(my_calibrator):
     root.after(10, my_loop, my_calibrator)   # milliseconds
 
 zombie_arm = ThisPi.ZombieArm()
+gpio = pigpio.pi()
 
 root = tk.Tk()
 root.title('Arm Calibration')
@@ -140,6 +198,5 @@ root.after(10,my_loop, my_calibrator)
 root.mainloop()
 
 
-for servo in arm_servos:
-    servo.close()
-ax12_connection.close()
+zombie_arm.close()
+print (module_name, 'finished')
