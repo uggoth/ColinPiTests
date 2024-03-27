@@ -13,6 +13,8 @@ data_object = data_module.ColinData()
 data_values = data_object.params
 ThisPiVersion = data_values['ThisPi']
 ThisPi = SourceFileLoader('ThisPi', '/home/pi/ColinThisPi/' + ThisPiVersion + '.py').load_module()
+GPIO_version = data_values['GPIO']
+GPIO = SourceFileLoader('GPIO', '/home/pi/ColinPiClasses/' + GPIO_version + '.py').load_module()
 
 class RelayButton:
     def __init__(self, name, master, x_origin, y_origin, relay_pin_no):
@@ -41,14 +43,19 @@ class FireButton:
     def __init__(self, name, master, x_origin, y_origin, fire_pin_no):
         self.master = master
         self.name = name
-        self.fire_pin_no = fire_pin_no
-        self.frequency = 50
-        self.name = name
         self.my_button = tk.Button(master,
                                    text=name,
                                    command=self.button_clicked)
+        self.my_stepper = GPIO.L298NStepperShort('Test Stepper', gpio, 19, 8, 7, 12)
+        self.my_stepper.float()
+        self.step_ons = 25
+        self.pause_microseconds = 5000
     def button_clicked(self):
         print ('Firing')
+        for i in range(self.step_ons):
+            self.my_stepper.step_on('ANTI', self.pause_microseconds)
+        self.my_stepper.float()
+
         
 class AX12ServoSlider:
     def __init__(self, master, x_origin, y_origin, servo):
