@@ -1,5 +1,5 @@
-module_prefix = 'test_06_G_posing_relay'
-module_version = '01'
+module_prefix = 'test_06_G_posing_nerf'
+module_version = '02'
 module_name = module_prefix + '_v' + module_version + '.py'
 
 print (module_name, 'starting')
@@ -43,22 +43,14 @@ class FireButton:
         self.name = name
         self.fire_pin_no = fire_pin_no
         self.frequency = 50
-        gpio.set_PWM_frequency(fire_pin_no, self.frequency)
-        gpio.set_PWM_range(fire_pin_no, 20000)
-        gpio.hardware_PWM(fire_pin_no, 50, 2000)
         self.name = name
         self.my_button = tk.Button(master,
                                    text=name,
                                    command=self.button_clicked)
     def button_clicked(self):
-        gpio.set_servo_pulsewidth(self.fire_pin_no, 2000)
-        time.sleep(1)
-        gpio.set_servo_pulsewidth(self.fire_pin_no, 1000)
-        time.sleep(1)
-        gpio.set_servo_pulsewidth(self.fire_pin_no, 0)
+        print ('Firing')
         
-        
-class ServoSlider:
+class AX12ServoSlider:
     def __init__(self, master, x_origin, y_origin, servo):
         self.master = master
         self.servo = servo
@@ -121,7 +113,7 @@ class ServoSlider:
     def set_label_to_current(self):
         position = self.servo.get_position()
         self.pos_label.configure(text=self.get_pos_text(position))
-
+        
 class Calibrator:
 
     def __init__(self, master, width, height, servo_list):
@@ -142,7 +134,7 @@ class Calibrator:
         x_now = x_left
         y_now = y_top
         for servo in self.servo_list:
-            self.sliders[servo.name] = ServoSlider(self.frame, x_now, y_now, servo)
+            self.sliders[servo.name] = AX12ServoSlider(self.frame, x_now, y_now, servo)
             y_now += y_interval
 
 #       SPEED
@@ -160,20 +152,14 @@ class Calibrator:
 
         x_now = x_left
         y_now += y_interval
-        self.button = RelayButton('Relay', self.frame, x_now, y_now, 8)
-        self.button.my_button.place(x=x_now,y=y_now)
+        self.relay_button = RelayButton('Relay', self.frame, x_now, y_now, 21)
+        self.relay_button.my_button.place(x=x_now,y=y_now)
         
         x_now = x_left
         y_now += y_interval
-        self.button = FireButton('Fire', self.frame, x_now, y_now, 19)
-        self.button.my_button.place(x=x_now,y=y_now)
+        self.fire_button = FireButton('Fire', self.frame, x_now, y_now, 19)
+        self.fire_button.my_button.place(x=x_now,y=y_now)
         
-#       INDICATORS
-#        x_now += (x_interval * 8)
-#        self.volts = voltage_monitor.VoltageMonitor(self.frame, x_now, y_now, 'WRIS')
-#        x_now += (x_interval * 3)
-#        self.down_ir = ir_monitor.IRMonitor(self.frame, x_now, y_now,'DOWN_IR')
-
     def get_speed(self):
         return int(self.speed_var.get()) * self.speed_factor
 
@@ -192,7 +178,7 @@ zombie_arm = ThisPi.ZombieArm()
 gpio = pigpio.pi()
 
 root = tk.Tk()
-root.title('Arm Calibration')
+root.title('Nerf Posing')
 my_calibrator = Calibrator(root, 750, 590, zombie_arm.servo_list)
 root.after(10,my_loop, my_calibrator)
 root.mainloop()

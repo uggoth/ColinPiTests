@@ -1,4 +1,4 @@
-module_name = 'test_05_basic_stepper.py'
+module_name = 'test_05_B_basic_stepper_v01.py'
 module_create_date = '202304271448'
 
 print (module_name, 'starting')
