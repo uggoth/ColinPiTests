@@ -40,21 +40,38 @@ class RelayButton:
             print ('off')
         
 class FireButton:
-    def __init__(self, name, master, x_origin, y_origin, fire_pin_no):
+    def __init__(self, name, master, x_origin, y_origin, my_stepper):
         self.master = master
         self.name = name
+        self.my_stepper = my_stepper
         self.my_button = tk.Button(master,
                                    text=name,
                                    command=self.button_clicked)
-        self.my_stepper = GPIO.L298NStepperShort('Test Stepper', gpio, 19, 8, 7, 12)
         self.my_stepper.float()
         self.step_ons = 25
-        self.pause_microseconds = 5000
+        self.pause_microseconds = 2000
     def button_clicked(self):
         print ('Firing')
         for i in range(self.step_ons):
             self.my_stepper.step_on('ANTI', self.pause_microseconds)
         self.my_stepper.float()
+
+class QuarterButton:
+    def __init__(self, name, master, x_origin, y_origin, my_stepper):
+        self.master = master
+        self.name = name
+        self.my_stepper = my_stepper
+        self.my_button = tk.Button(master,
+                                   text=name,
+                                   command=self.button_clicked)
+        self.my_stepper.float()
+        self.step_ons = 3
+        self.pause_microseconds = 2000
+    def button_clicked(self):
+        print ('Turning')
+        for i in range(self.step_ons):
+            self.my_stepper.step_on('ANTI', self.pause_microseconds)
+        #self.my_stepper.float()
 
         
 class AX12ServoSlider:
@@ -131,6 +148,7 @@ class Calibrator:
         self.frame = tk.Frame(master, width=self.frame_width, height=self.frame_height)
         self.frame.owning_object = self
         self.frame.pack()
+        self.my_stepper = GPIO.L298NStepperShort('Test Stepper', gpio, 19, 8, 7, 12)
         x_left = 10
         y_top = 10
         x_interval = 50
@@ -164,8 +182,13 @@ class Calibrator:
         
         x_now = x_left
         y_now += y_interval
-        self.fire_button = FireButton('Fire', self.frame, x_now, y_now, 19)
+        self.fire_button = FireButton('Fire', self.frame, x_now, y_now, self.my_stepper)
         self.fire_button.my_button.place(x=x_now,y=y_now)
+        
+        x_now = x_left
+        y_now += y_interval
+        self.quarter_button = QuarterButton('Quarter Turn', self.frame, x_now, y_now, self.my_stepper)
+        self.quarter_button.my_button.place(x=x_now,y=y_now)
         
     def get_speed(self):
         return int(self.speed_var.get()) * self.speed_factor
