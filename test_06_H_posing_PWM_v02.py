@@ -1,4 +1,4 @@
-module_prefix = 'test_06_G_posing_nerf'
+module_prefix = 'test_06_H_posing_PWM'
 module_version = '02'
 module_name = module_prefix + '_v' + module_version + '.py'
 
@@ -210,7 +210,9 @@ class Calibrator:
         self.speed_slider.set(50)
         self.speed_slider.place(x=x_now,y=y_now)
 
-        self.fire_slider = PWMServoSlider('Fire', self.frame, x_now, y_now, 19)
+        self.PWM_servo_pin_no = 19  #  NOTE: GPIO19 can be HARDWARE PWMed, which eliminates jitter
+
+        self.fire_slider = PWMServoSlider('Fire', self.frame, x_now, y_now, self.PWM_servo_pin_no)
         y_now += y_interval
 
         x_now = x_left
@@ -220,7 +222,7 @@ class Calibrator:
         
         x_now = x_left
         y_now += y_interval
-        self.fire_button = FireButton('Fire', self.frame, x_now, y_now, 19)
+        self.fire_button = FireButton('Fire', self.frame, x_now, y_now, self.PWM_servo_pin_no)
         self.fire_button.my_button.place(x=x_now,y=y_now)
         
         x_now = x_left

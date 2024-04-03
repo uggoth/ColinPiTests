@@ -56,7 +56,7 @@ class FireButton:
             self.my_stepper.step_on('ANTI', self.pause_microseconds)
         self.my_stepper.float()
 
-class QuarterButton:
+class StepButton:
     def __init__(self, name, master, x_origin, y_origin, my_stepper):
         self.master = master
         self.name = name
@@ -65,13 +65,13 @@ class QuarterButton:
                                    text=name,
                                    command=self.button_clicked)
         self.my_stepper.float()
-        self.step_ons = 3
+        self.step_ons = 1
         self.pause_microseconds = 2000
     def button_clicked(self):
         print ('Turning')
         for i in range(self.step_ons):
             self.my_stepper.step_on('ANTI', self.pause_microseconds)
-        #self.my_stepper.float()
+        self.my_stepper.float()
 
         
 class AX12ServoSlider:
@@ -187,8 +187,8 @@ class Calibrator:
         
         x_now = x_left
         y_now += y_interval
-        self.quarter_button = QuarterButton('Quarter Turn', self.frame, x_now, y_now, self.my_stepper)
-        self.quarter_button.my_button.place(x=x_now,y=y_now)
+        self.step_button = StepButton('Step Turn', self.frame, x_now, y_now, self.my_stepper)
+        self.step_button.my_button.place(x=x_now,y=y_now)
         
     def get_speed(self):
         return int(self.speed_var.get()) * self.speed_factor
