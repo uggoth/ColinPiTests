@@ -1,4 +1,4 @@
-module_name = 'test_15_K_straighten_up_v01.py'
+module_name = 'test_15_K_straighten_up_v02.py'
 print (module_name,'starting')
 print ('expects main_autonomous to be running on the Pico')
 
@@ -50,16 +50,17 @@ for i in range(no_loops):
     if i%flash_loops == 0:
         flip_flop = not flip_flop
         if flip_flop:
-            my_pico.do_command('0000', 'RLC+')
+            my_pico.send_command('0000', 'SGRN')
         else:
-            my_pico.do_command('0000', 'RLC-')
+            my_pico.send_command('0000', 'SOFF')
             
 if i >= no_loops:
     print ('Blue button not pressed. Exiting')
+    my_pico.send_command('0000', 'SOFF')
     sys.exit(1)
 print ('Blue button pressed. Starting ...')
 
-for i in range(9):
+for i in range(19):
     time.sleep(0.05)
     if driver.check_data_ready():
         ranging_data = driver.get_ranging_data()

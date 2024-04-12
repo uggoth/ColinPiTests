@@ -1,4 +1,4 @@
-module_name = 'test_15_G_various_commands_v03.py'
+module_name = 'test_15_G_various_commands_v04.py'
 print (module_name,'starting')
 print ('expects test_15_G to be running on the Pico')
 
@@ -15,7 +15,7 @@ import time
 import pigpio
 
 gpio = pigpio.pi()
-handshake = CommandStream.Handshake(4, gpio)
+handshake = CommandStream.Handshake('picoa hs', 4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 
@@ -25,14 +25,22 @@ my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 #  dddd is optional duration in milliseconds. If zero or not present do until told to stop
 #  cccc is an optional crab value from -100 (left) to +100 (right) (mecanum only)
 
+command_set = 1
+
 if my_pico.valid:
-    commands = ['DRIV   0  202500',
-                'DRIV   0  402500',
-                'DRIV GARBAGE',
-                'DRIV  50   0 300',
-                'DRIV  50   0 300',
-                'DRIV   0   0   0',
-                'TRNR 500']
+    if command_set == 1:
+        commands = ['DRIV   0  202500',
+                    'DRIV   0  402500',
+                    'DRIV GARBAGE',
+                    'DRIV  50   0 300',
+                    'DRIV  50   0 300',
+                    'DRIV   0   0   0',
+                    'TRNR 500']
+    elif command_set == 2:
+        commands = ['LSPR',
+                    'WAIT2000',
+                    'LOFF',
+                    'LDIM  25']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)

@@ -21,8 +21,11 @@ import time
 import pigpio
 gpio = pigpio.pi()
 pico_id = 'PICOA'
-handshake = CommandStream.Handshake(4, gpio)
+handshake = CommandStream.Handshake('picoa', 4, gpio)
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
+if not my_pico.valid:
+    print ('**** NO PICO ****')
+    sys.exit(1)
 my_ultrasonics = ThisPi.Ultrasonics(gpio)
 my_front_ultrasonic = my_ultrasonics.front_ultrasonic.instance
 for i in range(4):

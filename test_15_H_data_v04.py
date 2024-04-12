@@ -1,6 +1,7 @@
-module_name = 'test_15_H_data_v03.py'
+module_name = 'test_15_H_data_v04.py'
 print (module_name,'starting')
 print ('expects test_15_H to be running on the Pico')
+print ('expects AX12 controller on USB0')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
@@ -13,7 +14,12 @@ CommandStream = SourceFileLoader('CommandStream', '/home/pi/ColinPiClasses/' +
                                  data_values['CommandStream'] + '.py').load_module()
 import time
 import pigpio
+import sys
+
 zombie_arm = ThisPi.ZombieArm()
+if not zombie_arm.valid:
+    print ('**** No Zombie Arm found ****')
+    sys.exit(1)
 wrist_servo = zombie_arm.wrist_servo
 
 gpio = pigpio.pi()

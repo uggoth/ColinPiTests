@@ -1,6 +1,6 @@
-module_name = 'test_15_G_command_stream_v03.py'
+module_name = 'test_15_E_ESP32_command_stream_v04.py'
 print (module_name,'starting')
-print ('expects test_15_G to be running on the Pico')
+print ('expects a command processor to be running on the ESP32')
 
 from importlib.machinery import SourceFileLoader
 data_module = SourceFileLoader('Colin', '/home/pi/ColinThisPi/ColinData.py').load_module()
@@ -15,22 +15,20 @@ import time
 import pigpio
 
 gpio = pigpio.pi()
-handshake = CommandStream.Handshake(4, gpio)
-pico_id = 'PICOA'
-my_pico = CommandStream.Pico(pico_id, gpio, handshake)
-
-if my_pico.valid:
-    commands = ['DUMMY','WHOU','DUMMY','SBUS',
-            'DUMMY','MSTP','DUMMY']
+handshake = CommandStream.Handshake('esph', 18, gpio)
+esp32_id = 'ZOMBI'
+my_esp32 = CommandStream.Pico(esp32_id, gpio, handshake)
+if my_esp32.valid:
+    commands = ['GETW','WAIT2000','GETW','WHOU']
     i = 0
     for command in commands:
-        serial_no = '{:04}'.format(i)
-        print (' ')
-        print (serial_no, command)
-        time.sleep(1)
-        print (my_pico.send_command(serial_no, command))
         i += 1
+        serial_no_sent = '{:04}'.format(i)
+        print ('Sending ' + serial_no_sent + command)
+        serial_no_received, feedback, data = my_esp32.send_command(serial_no_sent,command)
+        print (serial_no_received, feedback, data)
+        time.sleep(1)
 else:
-    print ('*** No Pico')
-my_pico.close()
+    print ('****', esp32_id, 'not found ****')
+my_esp32.close()
 print (module_name, 'finished')
