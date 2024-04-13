@@ -40,27 +40,31 @@ print ('Now waiting for blue button')
 blue_button = 16
 gpio.set_mode(blue_button, pigpio.INPUT)
 gpio.set_pull_up_down(blue_button, pigpio.PUD_UP)
-no_loops = 1000
-flash_loops = 10
+
+poll_loops = 1000
+flash_interval = 10
 flip_flop = False
-for i in range(no_loops):
+for i in range(poll_loops):
     time.sleep(0.01)
     if gpio.read(blue_button) == 0:
         break
-    if i%flash_loops == 0:
+    if i%flash_interval == 0:
         flip_flop = not flip_flop
         if flip_flop:
             my_pico.send_command('0000', 'SGRN')
         else:
             my_pico.send_command('0000', 'SOFF')
             
-if i >= no_loops:
+if i >= poll_loops:
     print ('Blue button not pressed. Exiting')
     my_pico.send_command('0000', 'SOFF')
     sys.exit(1)
 print ('Blue button pressed. Starting ...')
+time.sleep(1)
 
-for i in range(19):
+success = False
+
+for i in range(10):
     time.sleep(0.05)
     if driver.check_data_ready():
         ranging_data = driver.get_ranging_data()
@@ -74,18 +78,26 @@ for i in range(19):
         mm11 = int(ranging_data.distance_mm[driver.nb_target_per_zone * 11])
         mm07 = int(ranging_data.distance_mm[driver.nb_target_per_zone * 7])
         mm03 = int(ranging_data.distance_mm[driver.nb_target_per_zone * 3])
-        print ('mm15:{:4}  mm11:{:4}  mm07:{:4}  mm03:{:4}'.format(mm15,mm11,mm07,mm03))
+        measurements = 'mm15:{:4}  mm11:{:4}  mm07:{:4}  mm03:{:4}'.format(mm15,mm11,mm07,mm03)
         left = (mm15+mm11)/2
         right = (mm07+mm03)/2
         diff = abs(left-right)
         if diff < 5:
-            print ('Straight')
+            print ('Straight', measurements)
+            success = True
             break
         if left < right:
+            print ('Turning Left', measurements)
             command = 'TRNL0040'
         else:
+            print ('Turning Right', measurements)
             command = 'TRNR0040'
         my_pico.send_command('0000', command)
+
+if success:
+    print ('---- Success ----')
+else:
+    print ('****FAILED ****')
 
 ColObjects.ColObj.close_all()
 print (module_name, 'finished')

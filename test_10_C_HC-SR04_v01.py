@@ -7,6 +7,9 @@ data_object = data_module.ColinData()
 data_values = data_object.params
 ThisPiVersion = data_values['ThisPi']
 ThisPi = SourceFileLoader('ThisPi', '/home/pi/ColinThisPi/' + ThisPiVersion + '.py').load_module()
+ColObjectsVersion = data_values['ColObjects']
+col_objects_name = '/home/pi/ColinPiClasses/' + ColObjectsVersion + '.py'
+ColObjects = SourceFileLoader('ColObjects', col_objects_name).load_module()
 
 import time
 GPIO = ThisPi.GPIO
@@ -14,7 +17,7 @@ pigpio = GPIO.pigpio
 gpio = pigpio.pi()
 my_ultrasonics = ThisPi.Ultrasonics(gpio)
 my_front_ultrasonic = my_ultrasonics.front_ultrasonic.instance
-for i in range(9):
+for i in range(3):
     time.sleep(1)
     print (my_front_ultrasonic.read_mms())
 my_ultrasonics.close()

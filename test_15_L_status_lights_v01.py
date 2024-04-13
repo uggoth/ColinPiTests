@@ -14,6 +14,7 @@ ThisPi = SourceFileLoader('ThisPi', '/home/pi/ColinThisPi/' + ThisPiVersion + '.
 CommandStream = SourceFileLoader('CommandStream', '/home/pi/ColinPiClasses/' + data_values['CommandStream'] + '.py').load_module()
 import time
 import pigpio
+import sys
 gpio = pigpio.pi()
 handshake = CommandStream.Handshake('picoa hs', 4, gpio)
 pico_id = 'PICOA'

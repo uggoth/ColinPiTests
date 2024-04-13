@@ -25,22 +25,27 @@ my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 #  dddd is optional duration in milliseconds. If zero or not present do until told to stop
 #  cccc is an optional crab value from -100 (left) to +100 (right) (mecanum only)
 
-command_set = 1
+command_set = 2
 
 if my_pico.valid:
     if command_set == 1:
-        commands = ['DRIV   0  202500',
-                    'DRIV   0  402500',
+        commands = ['DRIV   0  20 500',
+                    'DRIV   0  40 500',
                     'DRIV GARBAGE',
                     'DRIV  50   0 300',
                     'DRIV  50   0 300',
                     'DRIV   0   0   0',
                     'TRNR 500']
     elif command_set == 2:
-        commands = ['LSPR',
+        commands = ['SRED',
                     'WAIT2000',
-                    'LOFF',
-                    'LDIM  25']
+                    'SGRN',
+                    'WAIT2000',
+                    'SBLU',
+                    'WAIT2000',
+                    'SRED',
+                    'WAIT2000',
+                    'SOFF']
     i = 0
     for command in commands:
         serial_no = '{:04}'.format(i)
