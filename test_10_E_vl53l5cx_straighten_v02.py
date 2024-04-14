@@ -1,5 +1,5 @@
 module_prefix = 'test_10_E_vl53l5cx_straighten'
-module_version = '01'
+module_version = '02'
 module_name = module_prefix + '_v' + module_version + '.py'
 print (module_name, 'starting')
 print ('Position robot, then press blue button')
@@ -78,48 +78,63 @@ driver.set_ranging_frequency_hz(40)
 driver.start_ranging()
 print(f"Initialised ({time.time() - t:.1f}s)")
 
-big_diff = 20
-small_diff = 5
-ok_diff = 1.5
 ################################## should learn this
-carpet = True
+carpet = False
+####################################################
 if carpet:
     big_turn = 50
     small_turn = 20
+    big_diff = 20
+    small_diff = 5
+    ok_diff = 1.5
 else:
-    big_turn = 40
+    big_turn = 25
     small_turn = 10
+    big_diff = 12
+    small_diff = 4
+    ok_diff = 1.5
 ##################################
 active_turn = big_turn
-while True:
-    no_loops = 10000
-    flash_loops = 10
+
+def next_command(command):
+    global serial_no
+    serial_no += 1
+    serial_no_string = '{:04}'.format(serial_no)
+    return my_pico.send_command(serial_no_string, command)
+
+def wait_for_blue(blue_button, poll_loops):
+    flash_interval = 5
     flip_flop = False
-    interval = 0.01
-    i = 0
-    print ('Now waiting for blue button')
-    while i < no_loops:
-        time.sleep(interval)
+    for i in range(poll_loops):
+        time.sleep(0.01)
         if gpio.read(blue_button) == 0:
-            break
-        if i%flash_loops == 0:
+            return True
+        if i%flash_interval == 0:
             flip_flop = not flip_flop
             if flip_flop:
-                my_pico.send_command('0000', 'RLC+')
+                next_command('SGRN')
             else:
-                my_pico.send_command('0000', 'RLC-')
-        i += 1
-                
-    if i >= no_loops:
-        print ('Blue button not pressed. Exiting')
-        sys.exit(1)
-    wait_time = int(i * interval)
-    print ('Blue button pressed after', wait_time, 'seconds . Starting ...')
-    time.sleep(0.5)
+                next_command('SOFF')
+    return False
+
+serial_no = 1
+
+while True:   #####  Outer loop, once per test run
+    if wait_for_blue(blue_button, 500000):
+        print ('Blue button pressed. Starting ...')
+    else:
+        print ('Blue button not pressed. Start again')
+        continue
+    next_command('SGRN')
+    time.sleep(3)
+    next_command('SBLU')
+
     max_turns = 15
     turn = 0
-    while turn < max_turns:
+    while turn < max_turns:  ###### inner loop once per adjust
         success, diff = check_straight()
+        if not success:
+            continue
         adiff = abs(diff)
         if adiff < ok_diff:
             print ('diff OK', diff)
@@ -140,8 +155,8 @@ while True:
         else:
             command = 'TRNR' + turn_amount
         print (command)
-        my_pico.send_command_and_wait('0000', command)
-        time.sleep(0.1)
+        next_command(command)
+        time.sleep(0.05)
         turn += 1
     if turn < max_turns:
         print ('straighten OK')

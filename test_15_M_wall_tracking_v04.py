@@ -89,9 +89,14 @@ def straighten_up(attempts):
         direction = 'NONE'
     return success, direction, left_count, right_count
 
-def wait_for_blue(blue_button, poll_loops):
+def next_command(command):
     global serial_no
-    flash_interval = 10
+    serial_no += 1
+    serial_no_string = '{:04}'.format(serial_no)
+    return my_pico.send_command(serial_no_string, command)
+   
+def wait_for_blue(blue_button, poll_loops):
+    flash_interval = 7
     flip_flop = False
     for i in range(poll_loops):
         time.sleep(0.01)
@@ -99,60 +104,79 @@ def wait_for_blue(blue_button, poll_loops):
             return True
         if i%flash_interval == 0:
             flip_flop = not flip_flop
-            serial_no += 1
-            serial_no_string = '{:04}'.format(serial_no)
             if flip_flop:
-                my_pico.send_command(serial_no_string, 'SBLU')
+                next_command('SGRN')
             else:
-                my_pico.send_command(serial_no_string, 'SOFF')
+                next_command('SOFF')
     return False
 
-def calc_steering(mm03, mm07, mm11, mm15):
-    avg_offset = (mm15 + mm11 + mm07 + mm03) / 4
-    if avg_offset > 400:
-        return 0, True
-    if avg_offset < 120:
+def calc_steering(mm03, mm07, mm11, mm15, previous_offset, previous_angle):
+    avg_offset = (mm07 + mm03) / 2
+    if avg_offset > 350:
+        steering = 0
+        stopping = True
+        steering_info = 'STOPPING'
+        return steering, stopping, steering_info, avg_offset, 'STOPPING'
+    if avg_offset < 165:
         offset = 'TOO_CLOSE'
-    elif avg_offset > 180:
+    elif avg_offset > 185:
         offset = 'TOO_FAR'
     else:
         offset = 'DISTANCE_OK'
-        
-    avg_angle = (mm15 + mm11) / (mm07 + mm03)
-    if avg_angle < 0.95:
-        angle = 'OPENING'
-    elif avg_angle > 1.05:
+
+    margin = 5
+    if avg_offset < (previous_offset - margin):
         angle = 'CLOSING'
+    elif avg_offset > (previous_offset + margin):
+        angle = 'OPENING'
     else:
         angle = 'ANGLE_OK'
         
-    steering_info = offset + ' ' + angle
+    steering_info = offset + ' ' + angle + ' ' + previous_angle
     steering_calc = {
-        'TOO_CLOSE OPENING':0,
-        'TOO_CLOSE CLOSING':-20,
-        'TOO_CLOSE ANGLE_OK':-10,
-        'TOO_FAR OPENING':20,
-        'TOO_FAR CLOSING':0,
-        'TOO_FAR ANGLE_OK':-10,
-        'DISTANCE_OK OPENING':10,
-        'DISTANCE_OK CLOSING':-10,
-        'DISTANCE_OK ANGLE_OK':0
+        'TOO_CLOSE OPENING OPENING': 0,
+        'TOO_CLOSE CLOSING OPENING': 30,
+        'TOO_CLOSE ANGLE_OK OPENING': 20,
+        'TOO_FAR OPENING OPENING':-30,
+        'TOO_FAR CLOSING OPENING':-6,
+        'TOO_FAR ANGLE_OK OPENING':-20,
+        'DISTANCE_OK OPENING OPENING':-0,
+        'DISTANCE_OK CLOSING OPENING':0,
+        'DISTANCE_OK ANGLE_OK OPENING':0,
+
+        'TOO_CLOSE OPENING CLOSING': 0,
+        'TOO_CLOSE CLOSING CLOSING': 30,
+        'TOO_CLOSE ANGLE_OK CLOSING': 10,
+        'TOO_FAR OPENING CLOSING':-20,
+        'TOO_FAR CLOSING CLOSING':-6,
+        'TOO_FAR ANGLE_OK CLOSING':-20,
+        'DISTANCE_OK OPENING CLOSING':-6,
+        'DISTANCE_OK CLOSING CLOSING':-6,
+        'DISTANCE_OK ANGLE_OK CLOSING':0,
+
+        'TOO_CLOSE OPENING ANGLE_OK': 10,
+        'TOO_CLOSE CLOSING ANGLE_OK': 40,
+        'TOO_CLOSE ANGLE_OK ANGLE_OK': 20,
+        'TOO_FAR OPENING ANGLE_OK':-20,
+        'TOO_FAR CLOSING ANGLE_OK':-6,
+        'TOO_FAR ANGLE_OK ANGLE_OK':-20,
+        'DISTANCE_OK OPENING ANGLE_OK':-6,
+        'DISTANCE_OK CLOSING ANGLE_OK':-6,
+        'DISTANCE_OK ANGLE_OK ANGLE_OK':0
         }
 
     steering = steering_calc[steering_info]
-    return steering, False
+    return steering, False, steering_info, avg_offset, angle
 
-def next():
-    global serial_no
-    serial_no += 1
-    return '{:04}'.format(serial_no)
-   
+serial_no = 1
+
 handshake = CommandStream.Handshake('picoa hs', 4, gpio)
 pico_id = 'PICOA'
 my_pico = CommandStream.Pico(pico_id, gpio, handshake)
 if not my_pico.valid:
     print ('*** NO PICO')
     sys.exit(1)
+next_command('STOP')
 pwren = 17
 gpio.set_mode(pwren, pigpio.OUTPUT)
 gpio.write(pwren,1)
@@ -168,12 +192,10 @@ driver.set_ranging_frequency_hz(40)
 driver.start_ranging()
 print(f"Initialised ({time.time() - t:.1f}s)")
 print ('Now waiting for blue button')
-serial_no = 1
 blue_button = 16
 gpio.set_mode(blue_button, pigpio.INPUT)
 gpio.set_pull_up_down(blue_button, pigpio.PUD_UP)
 
-check_loops = 29
 max_not_ready = 100
 max_bad_status = 100
 no_zones = 16
@@ -183,49 +205,61 @@ leg = 0
 not_ready = 0
 bad_status = 0
 steering = 0
-throttle = 60
 delay = 0
 
+throttle = 40
+previous_offset = 0
+previous_angle = 'ANGLE_OK'
+check_loops = 40
+
 while True:
-    if wait_for_blue(blue_button, 50000):
+    if wait_for_blue(blue_button, 500000):
         print ('Blue button pressed. Starting ...')
     else:
-        print ('Blue button not pressed. Exiting')
-        sys.exit(1)
-    time.sleep(1)
+        print ('Blue button not pressed. Start again')
+        continue
+    next_command('SGRN')
+    time.sleep(4)
+    next_command('SBLU')
 
     command = 'DRIV{:04}{:04}{:04}'.format(steering, throttle, delay)
-    print (my_pico.send_command(next(), command))
+    print (next_command(command))
 
     for i in range(check_loops):
+        if gpio.read(blue_button) == 0:
+            break
+        if not front_ok:
+            print ('Hit Front')
+            break
         success, mm15, mm11, mm07, mm03, mmus = get_offsets()
         if not success:
             print ('**** no offsets ****')
             break
-        steering, stopping = calc_steering(mm15, mm11, mm07, mm03)
+        steering, stopping, steering_info, avg_offset, angle = calc_steering(
+            mm15, mm11, mm07, mm03, previous_offset, previous_angle)
+        previous_offset = avg_offset
+        previous_angle = angle
         if stopping:
-            print ('STOPPING BECAUSE OF LARGE OFFSET')
+            print ('STOPPING BECAUSE OF LARGE OFFSET', avg_offset)
             break
         abs_steering = abs(steering)
         if abs_steering > 15:
-            throttle_m = int(throttle * 0.5)
+            throttle_m = int(throttle * 0.8)
         elif abs_steering < 5:
-            throttle_m = int(throttle * 1.5)
+            throttle_m = int(throttle * 1.2)
         else:
             throttle_m = throttle
-        command = 'DRIV{:04}{:04}{:04}'.format(steering, throttle_m, delay)
-        print (my_pico.send_command(next(), command))
+        command = 'DRIV{:4}{:4}{:4}'.format(steering, throttle_m, delay)
+        print ('offs:{:3} steer:{:3}'.format(avg_offset, steering), '\n',
+               steering_info, command, next_command(command), '\n')
         time.sleep(interval / 1000.0)
-        next()
-        #print ('offsets OK')
     if success and not stopping:
         print ('STOPPING BECAUSE OF LOOP LIMIT')
     command = 'STOP'
-    print (my_pico.send_command(next(), command))
+    print (next_command(command))
 
 time.sleep(1)
-serial_no += 1
-my_pico.send_command(next(), 'STOP')
+next_command('STOP')
 
 my_ultrasonics.close()
 my_pico.close()
