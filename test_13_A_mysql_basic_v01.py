@@ -1,11 +1,12 @@
-import mariadb
+#import mariadb
+import mysql.connector
 import sys
 
 # Connect to MariaDB Platform
 try:
-    conn = mariadb.connect(
+    conn = mysql.connector.connect(
         user="dbuser",
-        password="Bankal0re*",
+        password="bankalore",
         host="localhost",
         port=3306,
         database="robotdb"
@@ -17,3 +18,4 @@ except mariadb.Error as e:
 
 # Get Cursor
 cur = conn.cursor()
+print ('Got cursor')

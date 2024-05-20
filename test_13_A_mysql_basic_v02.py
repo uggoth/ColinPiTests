@@ -20,9 +20,11 @@ except mariadb.Error as e:
 cur = conn.cursor()
 print (mariadb.__version__)
 sql = ("SELECT * FROM serial_nos")
-result = cur.execute(sql)
-print (result)
-rows = result.fetchall()
-pprint (rows)
+cur.execute(sql)
+nrows = 0
+for row in cur:
+    pprint (row)
+    nrows += 1
+print (nrows, 'rows retrieved')
 cur.close()
 conn.close()
